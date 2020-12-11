@@ -6,7 +6,8 @@ import java.util.Collections;
 import java.util.Properties;
 
 public class Application {
-    private static final String TOPIC = "valid-transactions";//change topic to correct name
+
+    private static final String TOPIC = "high-value-transactions";//change topic to correct name
     private static final String BOOTSTRAP_SERVERS = "localhost:9092,localhost:9093,localhost:9094";
 
     public static void main(String[] args) {
@@ -16,7 +17,7 @@ public class Application {
         Transaction transaction = new Transaction();
         Application kafkaConsumerApp = new Application();
 
-        String consumerGroup = "account-manager";
+        String consumerGroup = "high-value";
         if (args.length == 1) {//if user passes in cmd line parameter use this otherwise use default above
             consumerGroup = args[0];
         }
@@ -26,13 +27,16 @@ public class Application {
         Consumer<String, Transaction> kafkaConsumer = kafkaConsumerApp.createKafkaConsumer(BOOTSTRAP_SERVERS, consumerGroup);
 
         kafkaConsumerApp.consumeMessages(TOPIC, kafkaConsumer);
-        //approveTransaction(transaction);//need to pass in correct values
+
+        sendUserNotification(transaction);
     }
 
     public static void consumeMessages(String topic, Consumer<String, Transaction> kafkaConsumer) {
         //*****************
         // YOUR CODE HERE
         //*****************
+
+        // COMPLETE THIS METHOD
         kafkaConsumer.subscribe(Collections.singletonList(topic));
 
         while(true){
@@ -47,12 +51,15 @@ public class Application {
             }
             kafkaConsumer.commitAsync();
         }
+
+
+
     }
 
-   public static Consumer<String, Transaction> createKafkaConsumer(String bootstrapServers, String consumerGroup) {
-    //*****************
-    // YOUR CODE HERE
-    //*****************
+    public static Consumer<String, Transaction> createKafkaConsumer(String bootstrapServers, String consumerGroup) {
+        //*****************
+        // YOUR CODE HERE
+        //*****************
         Properties properties = new Properties();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);//how the consumer can access the cluster
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
@@ -60,16 +67,18 @@ public class Application {
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroup);
         properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);//turning auto commit off.
 
-      return new KafkaConsumer<>(properties);
+        return new KafkaConsumer<>(properties);
     }
 
-    private static void approveTransaction(Transaction transaction) {
+    private static void sendUserNotification(Transaction transaction) {
         // Print transaction information to the console
 
         //*****************
         // YOUR CODE HERE
-        //*****************
-        System.out.println("Stuff here");
+
+        System.out.println("Sending user %s," + transaction.getUser() + "notification about a high value of %d "+ transaction.getAmount()+
+                "originating in %s" + transaction.getTransactionLocation());
     }
 
 }
+

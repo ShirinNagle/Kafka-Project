@@ -73,10 +73,8 @@ public class Application {
 
     private static void sendUserNotification(Transaction transaction) {
         // Print transaction information to the console
-
         //*****************
         // YOUR CODE HERE
-
         System.out.println("Sending user %s," + transaction.getUser() + "notification about a suspicious transaction of %d "+ transaction.getAmount()+
                 "originating in %s" + transaction.getTransactionLocation());
     }
