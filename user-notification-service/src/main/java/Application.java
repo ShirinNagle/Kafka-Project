@@ -37,32 +37,31 @@ public class Application {
         // YOUR CODE HERE
         //*****************
 
-            // COMPLETE THIS METHOD
-            kafkaConsumer.subscribe(Collections.singletonList(topic));
+        // COMPLETE THIS METHOD
+        kafkaConsumer.subscribe(Collections.singletonList(topic));
 
-            while(true){
-                ConsumerRecords<String, Transaction> consumerRecords = kafkaConsumer.poll(Duration.ofSeconds(1));
+        while (true) {
+            ConsumerRecords<String, Transaction> consumerRecords = kafkaConsumer.poll(Duration.ofSeconds(1));
 
-                if(consumerRecords.isEmpty()){
+            if (consumerRecords.isEmpty()) {
 
-                }
-                for(ConsumerRecord<String, Transaction> record: consumerRecords){
-                    sendUserNotification(record.value());
-                    //System.out.println(String.format("Received record (key: %s, value: %s, partition: %d, offset: %d, From Topic: %s",
-                            //record.key(),record.value(), record.partition(), record.offset(), record.topic()));
-                    System.out.println(String.format(" partition: %d, offset: %d, From Topic: %s", record.partition(),record.offset(), record.topic()));
-                }
-                kafkaConsumer.commitAsync();
             }
-
+            for (ConsumerRecord<String, Transaction> record : consumerRecords) {
+                sendUserNotification(record.value());
+                //System.out.println(String.format("Received record (key: %s, value: %s, partition: %d, offset: %d, From Topic: %s",
+                //record.key(),record.value(), record.partition(), record.offset(), record.topic()));
+                System.out.println(String.format(" partition: %d, offset: %d, From Topic: %s", record.partition(), record.offset(), record.topic()));
+            }
+            kafkaConsumer.commitAsync();
+        }
 
 
     }
 
-  public static Consumer<String, Transaction> createKafkaConsumer(String bootstrapServers, String consumerGroup) {
-    //*****************
-    // YOUR CODE HERE
-    //*****************
+    public static Consumer<String, Transaction> createKafkaConsumer(String bootstrapServers, String consumerGroup) {
+        //*****************
+        // YOUR CODE HERE
+        //*****************
         Properties properties = new Properties();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);//how the consumer can access the cluster
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
@@ -70,14 +69,14 @@ public class Application {
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroup);
         properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);//turning auto commit off.
 
-      return new KafkaConsumer<>(properties);
-  }
+        return new KafkaConsumer<>(properties);
+    }
 
     private static void sendUserNotification(Transaction transaction) {
         // Print transaction information to the console
         //*****************
         // YOUR CODE HERE
-
+        //decided not to use the overwritten toString() in Transaction as I want to print more information to the console.
         System.out.print("Sending user: " + transaction.getUser() + " notification about a suspicious transaction of: "
                 + transaction.getAmount() + " Transaction originates in: " + transaction.getTransactionLocation() + " the reason for " +
                 "flagging the transaction as suspicious is transaction origin does not match customer location on file");

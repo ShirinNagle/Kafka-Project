@@ -36,6 +36,7 @@ public class Application {
         }
 
     }
+
     public static void processTransactions(IncomingTransactionsReader incomingTransactionsReader,
                                            CustomerAddressDatabase customerAddressDatabase,
                                            Producer<String, Transaction> kafkaProducer) throws ExecutionException, InterruptedException {
@@ -46,36 +47,26 @@ public class Application {
         // location match or not.
         // Print record metadata information
 
-        // int i = 0;
         while (incomingTransactionsReader.hasNext()) {
             Transaction transaction = incomingTransactionsReader.next();
 
             String key = transaction.getUser();
             String userResidence = customerAddressDatabase.getUserResidence(transaction.getUser());
-            if (transaction.getTransactionLocation().equalsIgnoreCase(userResidence))
-            {
+            if (transaction.getTransactionLocation().equalsIgnoreCase(userResidence)) {
                 if (transaction.getAmount() < HIGH_VALUE_AMT) {
                     ProducerRecord<String, Transaction> record = new ProducerRecord<>(TOPIC, key, transaction);//not sure this is correct
                     RecordMetadata recordMetadata = kafkaProducer.send(record).get();//futures async call
                     System.out.println(String.format("Record with (key: %s, value: %s) was sent to (partition: %d, offset: %d, topic: %s",
                             record.key(),
                             record.value(), recordMetadata.partition(), recordMetadata.offset(), record.topic()));
-                }
-                else
-                    {
-                    //have included TOPIC here as I want high values(which are also valid txs) to display in acc mgr, this means that any high value & valid txs appear twice in banking api
+                } else {
+
                     ProducerRecord<String, Transaction> record = new ProducerRecord<>(TOPIC2, key, transaction);
-                    ProducerRecord<String, Transaction> record1 = new ProducerRecord<>(TOPIC, key,transaction);
 
                     RecordMetadata recordMetadata = kafkaProducer.send(record).get();//futures async call
                     System.out.println(String.format("Record with (key: %s, value: %s) was sent to (partition: %d, offset: %d, topic: %s",
                             record.key(),
                             record.value(), recordMetadata.partition(), recordMetadata.offset(), record.topic()));
-                //added duplicate to recordMetadata1 - to indicate duplication in banking api.
-                    RecordMetadata recordMetadata1 = kafkaProducer.send(record1).get();//futures async call
-                    //System.out.println(String.format("Duplicate Record with (key: %s, value: %s) was sent to (partition: %d, offset: %d, topic: %s",
-                            //record1.key(),
-                            //record1.value(), recordMetadata1.partition(), recordMetadata1.offset(), record1.topic()));
                 }
             } else {
                 ProducerRecord<String, Transaction> record = new ProducerRecord<>(TOPIC1, key, transaction);

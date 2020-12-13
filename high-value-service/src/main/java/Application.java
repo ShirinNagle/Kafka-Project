@@ -26,10 +26,8 @@ public class Application {
 
 
         Consumer<String, Transaction> kafkaConsumer = kafkaConsumerApp.createKafkaConsumer(BOOTSTRAP_SERVERS, consumerGroup);
-        //sendUserNotification(transaction);
 
         kafkaConsumerApp.consumeMessages(TOPIC, kafkaConsumer);
-
 
     }
 
@@ -41,22 +39,21 @@ public class Application {
         // COMPLETE THIS METHOD
         kafkaConsumer.subscribe(Collections.singletonList(topic));
 
-        while(true){
+        while (true) {
             ConsumerRecords<String, Transaction> consumerRecords = kafkaConsumer.poll(Duration.ofSeconds(1));
 
-            if(consumerRecords.isEmpty()){
+            if (consumerRecords.isEmpty()) {
 
             }
-            for(ConsumerRecord<String, Transaction> record: consumerRecords){
+            for (ConsumerRecord<String, Transaction> record : consumerRecords) {
 
-                sendUserNotification(record.value());
+                sendUserNotification(record.value());//using method provided, decided to
                 //System.out.println(String.format("Received record (key: %s, value: %s, partition: %d, offset: %d, From Topic: %s",
-                        //record.key(),record.value(), record.partition(), record.offset(), record.topic()));
-                System.out.println(String.format(", Partition: %d, offset: %d, From Topic: %s", record.partition(),record.offset(), record.topic()));
+                //record.key(),record.value(), record.partition(), record.offset(), record.topic()));
+                System.out.println(String.format(", Partition: %d, offset: %d, From Topic: %s", record.partition(), record.offset(), record.topic()));
             }
             kafkaConsumer.commitAsync();
         }
-
 
 
     }
@@ -80,8 +77,9 @@ public class Application {
 
         //*****************
         // YOUR CODE HERE
-
-        System.out.print("High value transactions of above €1000 for: " + transaction.getUser() + " The amount is: " + transaction.getAmount() +
+        //decided not to use the overwritten toString() in Transaction as I want to print more information to the console.
+        System.out.print("High value transactions of above €1000 for: " + transaction.getUser() + " The amount is: "
+                + transaction.getAmount() +
                 " Transaction location is: "
                 + transaction.getTransactionLocation());
 

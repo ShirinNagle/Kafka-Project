@@ -34,25 +34,25 @@ public class Application {
 
         kafkaConsumer.subscribe(Collections.singletonList(topic));
 
-        while(true){
+        while (true) {
             ConsumerRecords<String, Transaction> consumerRecords = kafkaConsumer.poll(Duration.ofSeconds(1));
 
-            if(consumerRecords.isEmpty()){
+            if (consumerRecords.isEmpty()) {
 
             }
-            for(ConsumerRecord<String, Transaction> record: consumerRecords){
+            for (ConsumerRecord<String, Transaction> record : consumerRecords) {
 
                 approveTransaction(record.value());
-                System.out.println(String.format(" partition: %d, offset: %d, From Topic: %s", record.partition(),record.offset(), record.topic()));
+                System.out.println(String.format(" partition: %d, offset: %d, From Topic: %s", record.partition(), record.offset(), record.topic()));
             }
             kafkaConsumer.commitAsync();
         }
     }
 
-   public static Consumer<String, Transaction> createKafkaConsumer(String bootstrapServers, String consumerGroup) {
-    //*****************
-    // YOUR CODE HERE
-    //*****************
+    public static Consumer<String, Transaction> createKafkaConsumer(String bootstrapServers, String consumerGroup) {
+        //*****************
+        // YOUR CODE HERE
+        //*****************
         Properties properties = new Properties();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);//how the consumer can access the cluster
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
@@ -60,7 +60,7 @@ public class Application {
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroup);
         properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);//turning auto commit off.
 
-      return new KafkaConsumer<>(properties);
+        return new KafkaConsumer<>(properties);
     }
 
     private static void approveTransaction(Transaction transaction) {
@@ -70,7 +70,7 @@ public class Application {
         // YOUR CODE HERE
         //*****************
         System.out.print("Approved transactions for: " + transaction.getUser() + " The amount is: " + transaction.getAmount()
-                        + " Transaction location is: " + transaction.getTransactionLocation());
+                + " Transaction location is: " + transaction.getTransactionLocation());
     }
 
 }
