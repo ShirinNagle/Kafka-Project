@@ -7,7 +7,7 @@ import java.util.Properties;
 
 public class Application {
 
-    private static final String TOPIC = "high-value-transactions";//change topic to correct name
+    private static final String TOPIC = "high-value";//change topic to correct name
     private static final String BOOTSTRAP_SERVERS = "localhost:9092,localhost:9093,localhost:9094";
 
     public static void main(String[] args) {
@@ -24,11 +24,13 @@ public class Application {
 
         System.out.println("Consumer is part of consumer group " + consumerGroup);
 
+
         Consumer<String, Transaction> kafkaConsumer = kafkaConsumerApp.createKafkaConsumer(BOOTSTRAP_SERVERS, consumerGroup);
+        //sendUserNotification(transaction);
 
         kafkaConsumerApp.consumeMessages(TOPIC, kafkaConsumer);
 
-        sendUserNotification(transaction);
+
     }
 
     public static void consumeMessages(String topic, Consumer<String, Transaction> kafkaConsumer) {
@@ -46,8 +48,11 @@ public class Application {
 
             }
             for(ConsumerRecord<String, Transaction> record: consumerRecords){
-                System.out.println(String.format("Received record (key: %s, value: %s, partition: %d, offset: %d",
-                        record.key(),record.value(), record.partition(), record.offset()));
+
+                sendUserNotification(record.value());
+                //System.out.println(String.format("Received record (key: %s, value: %s, partition: %d, offset: %d, From Topic: %s",
+                        //record.key(),record.value(), record.partition(), record.offset(), record.topic()));
+                System.out.println(String.format(", Partition: %d, offset: %d, From Topic: %s", record.partition(),record.offset(), record.topic()));
             }
             kafkaConsumer.commitAsync();
         }
@@ -76,8 +81,10 @@ public class Application {
         //*****************
         // YOUR CODE HERE
 
-        System.out.println("Sending user %s," + transaction.getUser() + "notification about a high value of %d "+ transaction.getAmount()+
-                "originating in %s" + transaction.getTransactionLocation());
+        System.out.print("High value transactions of above €1000 for: " + transaction.getUser() + " The amount is: " + transaction.getAmount() +
+                " Transaction location is: "
+                + transaction.getTransactionLocation());
+
     }
 
 }

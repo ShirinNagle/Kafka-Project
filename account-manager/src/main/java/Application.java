@@ -13,7 +13,6 @@ public class Application {
         //*****************
         // YOUR CODE HERE
         //*****************
-        Transaction transaction = new Transaction();
         Application kafkaConsumerApp = new Application();
 
         String consumerGroup = "account-manager";
@@ -26,13 +25,13 @@ public class Application {
         Consumer<String, Transaction> kafkaConsumer = kafkaConsumerApp.createKafkaConsumer(BOOTSTRAP_SERVERS, consumerGroup);
 
         kafkaConsumerApp.consumeMessages(TOPIC, kafkaConsumer);
-        //approveTransaction(transaction);//need to pass in correct values
     }
 
     public static void consumeMessages(String topic, Consumer<String, Transaction> kafkaConsumer) {
         //*****************
         // YOUR CODE HERE
         //*****************
+
         kafkaConsumer.subscribe(Collections.singletonList(topic));
 
         while(true){
@@ -42,8 +41,9 @@ public class Application {
 
             }
             for(ConsumerRecord<String, Transaction> record: consumerRecords){
-                System.out.println(String.format("Received record (key: %s, value: %s, partition: %d, offset: %d",
-                        record.key(),record.value(), record.partition(), record.offset()));
+
+                approveTransaction(record.value());
+                System.out.println(String.format(" partition: %d, offset: %d, From Topic: %s", record.partition(),record.offset(), record.topic()));
             }
             kafkaConsumer.commitAsync();
         }
@@ -69,7 +69,8 @@ public class Application {
         //*****************
         // YOUR CODE HERE
         //*****************
-        System.out.println("Stuff here");
+        System.out.print("Approved transactions for: " + transaction.getUser() + " The amount is: " + transaction.getAmount()
+                        + " Transaction location is: " + transaction.getTransactionLocation());
     }
 
 }

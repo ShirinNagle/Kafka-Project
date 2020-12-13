@@ -9,7 +9,6 @@ import java.util.Properties;
 
 public class Application {
     private static final List <String> TOPICS = Arrays.asList("valid-transactions", "suspicious-transactions");//may change this
-    //private static final String TOPIC1 = "suspicious-transactions";
     private static final String BOOTSTRAP_SERVERS = "localhost:9092,localhost:9093,localhost:9094";
 
     public static void main(String[] args) {
@@ -29,16 +28,15 @@ public class Application {
         Consumer<String, Transaction> kafkaConsumer = kafkaConsumerApp.createKafkaConsumer(BOOTSTRAP_SERVERS, consumerGroup);
 
         kafkaConsumerApp.consumeMessages(TOPICS, kafkaConsumer);
-        //recordTransactionForReporting(String , transaction);//need to pass in correct argument not entirely happy with list above
-        System.out.println("Placeholder for method, when I work out correct list items");
+
     }
 
     public static void consumeMessages(List<String> topics, Consumer<String, Transaction> kafkaConsumer) {
         //*****************
         // YOUR CODE HERE
         //*****************
-        //kafkaConsumer.subscribe(Collections.singletonList(topics));
-        kafkaConsumer.subscribe(Collections.synchronizedList(topics));//not sure about synchronized list
+
+        kafkaConsumer.subscribe(Collections.synchronizedList(topics));//not sure about synchronized list,
 
         while(true){
             ConsumerRecords<String, Transaction> consumerRecords = kafkaConsumer.poll(Duration.ofSeconds(1));
@@ -47,8 +45,9 @@ public class Application {
 
             }
             for(ConsumerRecord<String, Transaction> record: consumerRecords){
-                System.out.println(String.format("Received record (key: %s, value: %s, partition: %d, offset: %d",
-                        record.key(),record.value(), record.partition(), record.offset()));
+               //recordTransactionForReporting( TOPICS.get(), record.value());
+                System.out.println(String.format("Received record (key: %s, value: %s, partition: %d, offset: %d, Topic: %s",
+                        record.key(),record.value(), record.partition(), record.offset(), record.topic()));
             }
             kafkaConsumer.commitAsync();
         }
@@ -75,13 +74,12 @@ public class Application {
         //*****************
         // YOUR CODE HERE
         //*****************
-        System.out.println("All records go here");
-        if(TOPICS.contains("valid-transactions")){
-            System.out.println("valid transaction for user %s"+ transaction.getUser());
+
+        if(TOPICS.get(0).equalsIgnoreCase("valid-transactions")){
+            System.out.print("valid transaction for user %s"+ transaction.toString());
         }
-        else{
-            System.out.println("invalid transaction for user %s" + transaction.getUser());
-        }
+        else
+            System.out.print("Suspicious transaction for user %s"+ transaction.toString());
     }
 
 }

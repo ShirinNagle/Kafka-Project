@@ -21,7 +21,7 @@ public class Application {
     public static void main(String[] args) {
         IncomingTransactionsReader incomingTransactionsReader = new IncomingTransactionsReader();
         CustomerAddressDatabase customerAddressDatabase = new CustomerAddressDatabase();
-        //Transaction transaction = new Transaction();
+
         Application kafkaApplication = new Application();
         Producer<String, Transaction> kafkaProducer = kafkaApplication.createKafkaProducer(BOOTSTRAP_SERVERS);
 
@@ -29,13 +29,13 @@ public class Application {
             processTransactions(incomingTransactionsReader, customerAddressDatabase, kafkaProducer);
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
+            e.getCause();//returns cause if known, else returns null
         } finally {
             kafkaProducer.flush();//clears the producer
             kafkaProducer.close();//close any network connections formed
         }
 
     }
-
     public static void processTransactions(IncomingTransactionsReader incomingTransactionsReader,
                                            CustomerAddressDatabase customerAddressDatabase,
                                            Producer<String, Transaction> kafkaProducer) throws ExecutionException, InterruptedException {
@@ -52,15 +52,18 @@ public class Application {
 
             String key = transaction.getUser();
             String userResidence = customerAddressDatabase.getUserResidence(transaction.getUser());
-            if (transaction.getTransactionLocation().equalsIgnoreCase(userResidence)) {
+            if (transaction.getTransactionLocation().equalsIgnoreCase(userResidence))
+            {
                 if (transaction.getAmount() < HIGH_VALUE_AMT) {
                     ProducerRecord<String, Transaction> record = new ProducerRecord<>(TOPIC, key, transaction);//not sure this is correct
                     RecordMetadata recordMetadata = kafkaProducer.send(record).get();//futures async call
                     System.out.println(String.format("Record with (key: %s, value: %s) was sent to (partition: %d, offset: %d, topic: %s",
                             record.key(),
                             record.value(), recordMetadata.partition(), recordMetadata.offset(), record.topic()));
-                } else {
-                    //have included TOPIC here as I want high values to also display in acc mgr, this means that any high value & valid txs appear twice in banking api
+                }
+                else
+                    {
+                    //have included TOPIC here as I want high values(which are also valid txs) to display in acc mgr, this means that any high value & valid txs appear twice in banking api
                     ProducerRecord<String, Transaction> record = new ProducerRecord<>(TOPIC2, key, transaction);
                     ProducerRecord<String, Transaction> record1 = new ProducerRecord<>(TOPIC, key,transaction);
 
@@ -70,9 +73,9 @@ public class Application {
                             record.value(), recordMetadata.partition(), recordMetadata.offset(), record.topic()));
                 //added duplicate to recordMetadata1 - to indicate duplication in banking api.
                     RecordMetadata recordMetadata1 = kafkaProducer.send(record1).get();//futures async call
-                    System.out.println(String.format("Duplicate Record with (key: %s, value: %s) was sent to (partition: %d, offset: %d, topic: %s",
-                            record1.key(),
-                            record1.value(), recordMetadata1.partition(), recordMetadata1.offset(), record1.topic()));
+                    //System.out.println(String.format("Duplicate Record with (key: %s, value: %s) was sent to (partition: %d, offset: %d, topic: %s",
+                            //record1.key(),
+                            //record1.value(), recordMetadata1.partition(), recordMetadata1.offset(), record1.topic()));
                 }
             } else {
                 ProducerRecord<String, Transaction> record = new ProducerRecord<>(TOPIC1, key, transaction);
@@ -81,17 +84,6 @@ public class Application {
                 System.out.println(String.format("Record with (key: %s, value: %s) was sent to (partition: %d, offset: %d, topic: %s", record.key(),
                         record.value(), recordMetadata.partition(), recordMetadata.offset(), record.topic()));
             }
-
-            //decided to have a separate if statement for the higher value topic as Acc mgr needs to be notified for all valid amts
-            //considered a nested if, but a separate if seemed the most straight forward.
-            /*if(transaction.getTransactionLocation().equalsIgnoreCase(userResidence) && transaction.getAmount() > HIGH_VALUE_AMT){
-                ProducerRecord<String, Transaction> record = new ProducerRecord<>(TOPIC2,key, transaction);
-                RecordMetadata recordMetadata = kafkaProducer.send(record).get();
-                //key is user
-                System.out.println(String.format("Record with (keys: %s, value: %s) was sent to (partition: %d, offset: %d, topic: %s", record.key(),
-                        record.value(), recordMetadata.partition(), recordMetadata.offset(), record.topic()));
-            }*/
-
         }
     }
 

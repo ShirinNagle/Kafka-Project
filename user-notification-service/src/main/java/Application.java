@@ -47,8 +47,10 @@ public class Application {
 
                 }
                 for(ConsumerRecord<String, Transaction> record: consumerRecords){
-                    System.out.println(String.format("Received record (key: %s, value: %s, partition: %d, offset: %d",
-                            record.key(),record.value(), record.partition(), record.offset()));
+                    sendUserNotification(record.value());
+                    //System.out.println(String.format("Received record (key: %s, value: %s, partition: %d, offset: %d, From Topic: %s",
+                            //record.key(),record.value(), record.partition(), record.offset(), record.topic()));
+                    System.out.println(String.format(" partition: %d, offset: %d, From Topic: %s", record.partition(),record.offset(), record.topic()));
                 }
                 kafkaConsumer.commitAsync();
             }
@@ -75,8 +77,10 @@ public class Application {
         // Print transaction information to the console
         //*****************
         // YOUR CODE HERE
-        System.out.println("Sending user %s," + transaction.getUser() + "notification about a suspicious transaction of %d "+ transaction.getAmount()+
-                "originating in %s" + transaction.getTransactionLocation());
+
+        System.out.print("Sending user: " + transaction.getUser() + " notification about a suspicious transaction of: "
+                + transaction.getAmount() + " Transaction originates in: " + transaction.getTransactionLocation() + " the reason for " +
+                "flagging the transaction as suspicious is transaction origin does not match customer location on file");
     }
 
 }
